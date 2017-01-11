@@ -116,7 +116,7 @@ function iterateEquation(Cr, Ci, escapeRadius, iterations)
     Ti = Zi * Zi;
   }
 
-  return [n, Tr, Ti];
+  return [n, Zr, Zi];
 }
 
 /*
@@ -464,9 +464,8 @@ function draw(pickColor, superSamples)
 
 // Some constants used with smoothColor
 var logBase = 1.0 / Math.log(2.0);
-var logHalfBase = Math.log(0.5)*logBase;
 
-function smoothColor(steps, n, Tr, Ti)
+function smoothColor(steps, n, Zr, Zi)
 {
   /*
    * Original smoothing equation is
@@ -475,37 +474,37 @@ function smoothColor(steps, n, Tr, Ti)
    *
    * but can be simplified using some elementary logarithm rules to
    */
-  return 1 + n - logHalfBase - Math.log(Math.log(Tr+Ti))*logBase;
+  return 2 + n - Math.log(Math.log(Zr*Zr+Zi*Zi))*logBase;
 }
 
-function pickColorHSV1(steps, n, Tr, Ti)
+function pickColorHSV1(steps, n, Zr, Zi)
 {
   if ( n == steps ) // converged?
     return interiorColor;
 
-  var v = smoothColor(steps, n, Tr, Ti);
+  var v = smoothColor(steps, n, Zr, Zi);
   var c = hsv_to_rgb(360.0*v/steps, 1.0, 1.0);
   c.push(255); // alpha
   return c;
 }
 
-function pickColorHSV2(steps, n, Tr, Ti)
+function pickColorHSV2(steps, n, Zr, Zi)
 {
   if ( n == steps ) // converged?
     return interiorColor;
 
-  var v = smoothColor(steps, n, Tr, Ti);
+  var v = smoothColor(steps, n, Zr, Zi);
   var c = hsv_to_rgb(360.0*v/steps, 1.0, 10.0*v/steps);
   c.push(255); // alpha
   return c;
 }
 
-function pickColorHSV3(steps, n, Tr, Ti)
+function pickColorHSV3(steps, n, Zr, Zi)
 {
   if ( n == steps ) // converged?
     return interiorColor;
 
-  var v = smoothColor(steps, n, Tr, Ti);
+  var v = smoothColor(steps, n, Zr, Zi);
   var c = hsv_to_rgb(360.0*v/steps, 1.0, 10.0*v/steps);
 
   // swap red and blue
@@ -517,12 +516,12 @@ function pickColorHSV3(steps, n, Tr, Ti)
   return c;
 }
 
-function pickColorAngle(steps, n, Tr, Ti)
+function pickColorAngle(steps, n, Zr, Zi)
 {
    if ( n == steps ) // converged?
     return interiorColor;
 
-  var v = Math.atan2(Ti, Tr);
+  var v = Math.atan2(Zi, Zr);
   if (v < 0.0) {
     v += 2.0 * Math.PI;
   }
@@ -537,21 +536,21 @@ function pickColorAngle(steps, n, Tr, Ti)
   return c;
 }
 
-function pickColorGrayscale(steps, n, Tr, Ti)
+function pickColorGrayscale(steps, n, Zr, Zi)
 {
   if ( n == steps ) // converged?
     return interiorColor;
 
-  var v = smoothColor(steps, n, Tr, Ti);
+  var v = smoothColor(steps, n, Zr, Zi);
   v = Math.floor(512.0*v/steps);
   if ( v > 255 ) v = 255;
   return [v, v, v, 255];
 }
 
-function pickColorGrayscale2(steps, n, Tr, Ti)
+function pickColorGrayscale2(steps, n, Zr, Zi)
 {
   if ( n == steps ) { // converged?
-    var c = 255 - Math.floor(255.0*Math.sqrt(Tr+Ti)) % 255;
+    var c = 255 - Math.floor(255.0*Math.sqrt(Zr*Zr+Zi*Zi)) % 255;
     if ( c < 0 ) c = 0;
     if ( c > 255 ) c = 255;
     return [c, c, c, 255];
