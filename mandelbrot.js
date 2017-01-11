@@ -69,6 +69,7 @@ function getColorPicker()
   if ( p == "pickColorHSV2" ) return pickColorHSV2;
   if ( p == "pickColorHSV3" ) return pickColorHSV3;
   if ( p == "pickColorGrayscale2" ) return pickColorGrayscale2;
+  if ( p == "pickColorAngle" ) return pickColorAngle;
   return pickColorGrayscale;
 }
 
@@ -109,17 +110,6 @@ function iterateEquation(Cr, Ci, escapeRadius, iterations)
   var n  = 0;
 
   for ( ; n<iterations && (Tr+Ti)<=escapeRadius; ++n ) {
-    Zi = 2 * Zr * Zi + Ci;
-    Zr = Tr - Ti + Cr;
-    Tr = Zr * Zr;
-    Ti = Zi * Zi;
-  }
-
-  /*
-   * Four more iterations to decrease error term;
-   * see http://linas.org/art-gallery/escape/escape.html
-   */
-  for ( var e=0; e<4; ++e ) {
     Zi = 2 * Zr * Zi + Ci;
     Zr = Tr - Ti + Cr;
     Tr = Zr * Zr;
@@ -485,7 +475,7 @@ function smoothColor(steps, n, Tr, Ti)
    *
    * but can be simplified using some elementary logarithm rules to
    */
-  return 5 + n - logHalfBase - Math.log(Math.log(Tr+Ti))*logBase;
+  return 1 + n - logHalfBase - Math.log(Math.log(Tr+Ti))*logBase;
 }
 
 function pickColorHSV1(steps, n, Tr, Ti)
@@ -517,6 +507,23 @@ function pickColorHSV3(steps, n, Tr, Ti)
 
   var v = smoothColor(steps, n, Tr, Ti);
   var c = hsv_to_rgb(360.0*v/steps, 1.0, 10.0*v/steps);
+
+  // swap red and blue
+  var t = c[0];
+  c[0] = c[2];
+  c[2] = t;
+
+  c.push(255); // alpha
+  return c;
+}
+
+function pickColorAngle(steps, n, Tr, Ti)
+{
+   if ( n == steps ) // converged?
+    return interiorColor;
+
+  var v = Math.atan2(Tr, Ti);
+  var c = hsv_to_rgb(180.0*v/Math.PI, 1.0, 1.0);
 
   // swap red and blue
   var t = c[0];
