@@ -522,7 +522,10 @@ function pickColorAngle(steps, n, Tr, Ti)
    if ( n == steps ) // converged?
     return interiorColor;
 
-  var v = Math.atan2(Tr, Ti);
+  var v = Math.atan2(Ti, Tr);
+  if (v < 0.0) {
+    v += 2.0 * Math.PI;
+  }
   var c = hsv_to_rgb(180.0*v/Math.PI, 1.0, 1.0);
 
   // swap red and blue
